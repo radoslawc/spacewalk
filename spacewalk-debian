@@ -1,0 +1,70 @@
+echo "deb http://miroslav.suchy.cz/spacewalk/debian spacewalk-unstable ./" >> /etc/apt/sources.list.d/spacewalk.list
+
+apt-get update
+
+apt-get install apt-spacewalk rhnsd rhnpush python-libxml2 rhncfg
+
+#error in python code in Suse & debian spacewalk
+
+sed -i 's/class SSLCertificateVerifyFailedError(RepoError, Error):/class SSLCertificateVerifyFailedError(RepoError):/g' /usr/share/rhn/up2date_client/up2dateErrors.py
+
+#missing dir
+
+mkdir /var/lib/up2date
+
+#installs apt and apt-utils from spacewalk repo
+
+apt-get update && apt-get upgrade
+
+
+root@debian64:~# diff -Nru up2date /etc/sysconfig/rhn/up2date
+--- up2date     2012-07-06 20:08:59.000000000 -0400
++++ /etc/sysconfig/rhn/up2date  2012-07-06 20:09:50.000000000 -0400
+@@ -9,7 +9,7 @@
+ 
+ serverURL[comment]=Remote server URL (use FQDN)
+ #serverURL=https://xmlrpc.rhn.redhat.com/XMLRPC
+-serverURL=https://enter.your.server.url.here/XMLRPC
++serverURL=http://edek/XMLRPC
+ 
+ hostedWhitelist[comment]=RHN Hosted URL's
+ hostedWhitelist=
+@@ -37,7 +37,7 @@
+ 
+ # Akamai does not support http protocol, therefore setting this option as side effect disable "Location aware" function
+ useNoSSLForPackages[comment]=Use the noSSLServerURL for package, package list, and header fetching (disable Akamai)
+-useNoSSLForPackages=0
++useNoSSLForPackages=1
+ 
+ retrieveOnly[comment]=Retrieve packages only
+ retrieveOnly=0
+
+Make Repo, make channel, make activation key
+
+rhnreg_ks --activationkey=1-debian64 --profilename=debian64
+
+rhn-channel --add -c debian64
+
+rhn-actions-controll --enable-all
+
+root@debian64:~# rhnpush -v --channel=debian64 --server=http://edek --dir=repo
+Connecting to http://edek/APP
+Red Hat Network username: admin 
+Red Hat Network password: 
+
+Uploading package /root/repo/libhal1_0.5.14-3_amd64.deb
+Using POST request
+Package /root/repo/libnss3-1d_3.12.8-1+squeeze5_amd64.deb Not Found on RHN Server -- Uploading
+Uploading package /root/repo/libnss3-1d_3.12.8-1+squeeze5_amd64.deb
+Using POST request
+Package /root/repo/consolekit_0.4.1-4_amd64.deb Not Found on RHN Server -- Uploading
+Uploading package /root/repo/consolekit_0.4.1-4_amd64.deb
+Using POST request
+Package /root/repo/radeontool_1.6.1-1_amd64.deb Not Found on RHN Server -- Uploading
+Uploading package /root/repo/radeontool_1.6.1-1_amd64.deb
+Using POST request
+Package /root/repo/chkconfig_11.0-79.1-2_all.deb already exists on the RHN Server-- Skipping Upload....
+Package /root/repo/libdbus-1-3_1.2.24-4+squeeze1_amd64.deb Not Found on RHN Server -- Uploading
+
+ERROR: unhandled exception occurred: ('module' object has no attribute 'Fault').
+
