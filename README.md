@@ -1,4 +1,4 @@
 spacewalk
 =========
 
-spaewalk for debian
+spacewalk for debian
